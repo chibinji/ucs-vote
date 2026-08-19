@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="520" viewBox="0 0 400 520">
+  <rect width="400" height="520" fill="#F6F2ED"/>
+
+  <g fill="#D0DDDB">
+    <rect x="-36" y="28" width="268" height="56" rx="28" transform="rotate(-26 98 56)"/>
+    <rect x="138" y="156" width="286" height="60" rx="30" transform="rotate(-26 281 186)"/>
+    <rect x="-48" y="292" width="274" height="56" rx="28" transform="rotate(-26 89 320)"/>
+    <rect x="128" y="424" width="292" height="60" rx="30" transform="rotate(-26 274 454)"/>
+    <rect x="370" y="-24" width="268" height="56" rx="28" transform="rotate(-26 504 4)"/>
+    <rect x="-250" y="156" width="286" height="60" rx="30" transform="rotate(-26 -107 186)"/>
+  </g>
+
+  <g fill="#C7D6D4">
+    <path d="M318 4a54 54 0 0 1 0 108h-54V58a54 54 0 0 1 54-54z"/>
+    <circle cx="72" cy="208" r="42"/>
+    <path d="M22 394a50 50 0 0 0 100 0H22z"/>
+    <circle cx="352" cy="330" r="34"/>
+    <path d="M210 248a40 40 0 0 1 80 0h-80z"/>
+    <circle cx="72" cy="728" r="42"/>
+  </g>
+
+  <g fill="#F2D9BD">
+    <circle cx="232" cy="72" r="12"/>
+    <rect x="64" y="148" width="50" height="18" rx="9"/>
+    <circle cx="372" cy="228" r="10"/>
+    <rect x="286" y="400" width="56" height="16" rx="8"/>
+    <circle cx="44" cy="476" r="11"/>
+    <rect x="162" y="262" width="42" height="16" rx="8"/>
+    <circle cx="188" cy="18" r="8"/>
+    <rect x="8" y="328" width="36" height="14" rx="7"/>
+  </g>
+
+  <g fill="#D6D2CC">
+    <path d="M348 140l18 32h-36z"/>
+    <path d="M22 82l15 26h-30z"/>
+    <path d="M182 384l17 30h-34z"/>
+    <path d="M304 500l15 26h-30z"/>
+    <path d="M118 250l14 24h-28z"/>
+  </g>
+
+  <g fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round">
+    <rect x="12" y="48" width="206" height="48" rx="24" transform="rotate(-26 115 72)"/>
+    <circle cx="280" cy="224" r="32"/>
+    <rect x="122" y="284" width="66" height="24" rx="12"/>
+    <path d="M10 180a36 36 0 0 1 72 0"/>
+    <path d="M262 360l20 36h-40z"/>
+    <rect x="204" y="8" width="48" height="16" rx="8"/>
+    <circle cx="116" cy="452" r="20"/>
+    <rect x="320" y="96" width="58" height="20" rx="10" transform="rotate(-26 349 106)"/>
+    <path d="M40 500a28 28 0 0 1 56 0"/>
+  </g>
+</svg>

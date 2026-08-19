@@ -1,0 +1,203 @@
+@import "tailwindcss";
+
+:root {
+  --ucs-teal: #2c8992;
+  --ucs-orange: #ff9000;
+  --ucs-offwhite: #f4f2ef;
+  --ucs-gray: #454b4c;
+  --background: var(--ucs-offwhite);
+  --foreground: var(--ucs-gray);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-teal: var(--ucs-teal);
+  --color-orange: var(--ucs-orange);
+  --color-offwhite: var(--ucs-offwhite);
+  --color-ink: var(--ucs-gray);
+  --font-sans: var(--font-body);
+  --font-mono: var(--font-code);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #f6f2ed;
+  background-image: url("/branding/ucs-geo.svg");
+  background-repeat: repeat;
+  background-size: 400px 520px;
+  color: var(--foreground);
+  font-family: var(--font-body), "Poppins", sans-serif;
+}
+
+h1,
+h2,
+h3,
+.display {
+  font-family: var(--font-display), "Josefin Sans", sans-serif;
+}
+
+.ucs-pattern {
+  height: 8px;
+  background: repeating-linear-gradient(
+    90deg,
+    #2c8992 0 14px,
+    #ff9000 14px 22px,
+    #454b4c 22px 30px,
+    #2c8992 30px 44px
+  );
+}
+
+.ucs-masthead {
+  width: 100%;
+  background-color: #f6efe9;
+}
+
+.btn-primary {
+  background: #ff9000;
+  color: #111;
+  font-weight: 600;
+}
+
+.btn-primary:hover {
+  filter: brightness(0.95);
+}
+
+.btn-teal {
+  background: #2c8992;
+  color: white;
+  font-weight: 600;
+}
+
+.card {
+  background: white;
+  border: 1px solid rgba(69, 75, 76, 0.12);
+  border-radius: 1.25rem;
+  box-shadow: 0 12px 32px rgba(44, 137, 146, 0.08);
+}
+
+.card-geo {
+  background: rgba(255, 255, 255, 0.42);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 16px 40px rgba(44, 137, 146, 0.12);
+}
+
+.field {
+  width: 100%;
+  border-radius: 0.9rem;
+  border: 1px solid rgba(69, 75, 76, 0.2);
+  background: #fff;
+  padding: 0.7rem 0.95rem;
+  color: #454b4c;
+  outline: none;
+}
+
+.field:focus {
+  border-color: #2c8992;
+  box-shadow: 0 0 0 3px rgba(44, 137, 146, 0.15);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  padding: 0.55rem 1.1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: #2c8992;
+  border: 1px solid rgba(44, 137, 146, 0.25);
+}
+
+.btn-danger {
+  background: transparent;
+  color: #b42318;
+  border: 1px solid rgba(180, 35, 24, 0.25);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  padding: 0.2rem 0.7rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.badge-draft {
+  background: #454b4c14;
+  color: #454b4c;
+}
+
+.badge-open {
+  background: #2c89921a;
+  color: #2c8992;
+}
+
+.badge-closed {
+  background: #ff90001f;
+  color: #9a5a00;
+}
+
+.table-head {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(69, 75, 76, 0.7);
+}
+
+@media print {
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  nav,
+  footer,
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background-color: #f6f2ed !important;
+    background-image: url("/branding/ucs-geo.svg") !important;
+    background-repeat: repeat !important;
+    background-size: 400px 520px !important;
+  }
+
+  main {
+    max-width: none !important;
+    padding: 0 !important;
+  }
+
+  .card {
+    box-shadow: none;
+    border: 1px solid #ddd;
+    break-inside: avoid;
+  }
+
+  .ucs-masthead {
+    background-color: #f6efe9 !important;
+  }
+
+  .ucs-pattern {
+    height: 8px !important;
+  }
+}

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 160" role="img" aria-label="UNZA Computer Society">
+  <circle cx="60" cy="58" r="48" fill="#2C8992"/>
+  <path d="M60 28c-16 0-28 12-28 30 0 10 5 18 14 24 3 2 4 4 4 7v3h20v-3c0-3 1-5 4-7 9-6 14-14 14-24 0-18-12-30-28-30z" fill="none" stroke="#F4F2EF" stroke-width="8"/>
+  <circle cx="60" cy="52" r="10" fill="#F4F2EF"/>
+  <path d="M68 60 L86 78" stroke="#2C8992" stroke-width="10" stroke-linecap="round"/>
+  <rect x="42" y="118" width="36" height="22" rx="6" fill="#FF9000"/>
+</svg>

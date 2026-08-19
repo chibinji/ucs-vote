@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 280" role="img" aria-label="The University of Zambia">
+  <rect width="280" height="280" fill="#111"/>
+  <path d="M40 78h200l-18 18H58z" fill="#FF9000"/>
+  <text x="140" y="70" text-anchor="middle" font-size="14" font-family="Arial, sans-serif" font-weight="700" fill="#111">THE UNIVERSITY OF ZAMBIA</text>
+  <path d="M70 90h140l-12 120H82z" fill="#FF9000"/>
+  <path d="M84 104h112l-10 96H94z" fill="#111"/>
+  <rect x="84" y="104" width="56" height="48" fill="#111"/>
+  <rect x="140" y="104" width="56" height="48" fill="#c1121f"/>
+  <rect x="84" y="152" width="56" height="48" fill="#2d6a4f"/>
+  <rect x="140" y="152" width="56" height="48" fill="#111"/>
+  <text x="140" y="248" text-anchor="middle" font-size="12" font-family="Arial, sans-serif" font-weight="700" fill="#111">SERVICE AND EXCELLENCE</text>
+  <path d="M48 220h184l-16 18H64z" fill="#FF9000"/>
+</svg>

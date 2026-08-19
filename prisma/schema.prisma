@@ -1,0 +1,107 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Election {
+  id        String     @id @default(cuid())
+  title     String
+  status    String     @default("draft")
+  openedAt  DateTime?
+  closedAt  DateTime?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  positions Position[]
+}
+
+model Position {
+  id         String          @id @default(cuid())
+  electionId String
+  election   Election        @relation(fields: [electionId], references: [id], onDelete: Cascade)
+  title      String
+  sortOrder  Int             @default(0)
+  candidates Candidate[]
+  choices    BallotChoice[]
+}
+
+model Candidate {
+  id        String         @id @default(cuid())
+  positionId String
+  position  Position       @relation(fields: [positionId], references: [id], onDelete: Cascade)
+  name      String
+  photoMime String?
+  photoData Bytes?
+  sortOrder Int            @default(0)
+  choices   BallotChoice[]
+}
+
+model Voter {
+  id                 String    @id @default(cuid())
+  computerNumber     String    @unique
+  csEmail            String    @unique
+  fullName           String?
+  hasVoted           Boolean   @default(false)
+  votedAt            DateTime?
+  deviceTokenHash    String?
+  deviceFingerprint  String?
+  deviceLabel        String?
+  createdAt          DateTime  @default(now())
+  otps               OtpCode[]
+}
+
+model OtpCode {
+  id         String    @id @default(cuid())
+  voterId    String
+  voter      Voter     @relation(fields: [voterId], references: [id], onDelete: Cascade)
+  codeHash   String
+  expiresAt  DateTime
+  attempts   Int       @default(0)
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+}
+
+model Ballot {
+  id          String         @id @default(cuid())
+  receiptHash String         @unique
+  deviceType  String?
+  createdAt   DateTime       @default(now())
+  choices     BallotChoice[]
+}
+
+model BallotChoice {
+  id          String    @id @default(cuid())
+  ballotId    String
+  ballot      Ballot    @relation(fields: [ballotId], references: [id], onDelete: Cascade)
+  positionId  String
+  position    Position  @relation(fields: [positionId], references: [id])
+  candidateId String
+  candidate   Candidate @relation(fields: [candidateId], references: [id])
+
+  @@unique([ballotId, positionId])
+}
+
+model AuditLog {
+  id     String   @id @default(cuid())
+  at     DateTime @default(now())
+  actor  String
+  action String
+  detail String?
+  ip     String?
+}
+
+model RateLimit {
+  id      String   @id
+  count   Int
+  resetAt DateTime
+}
+
+model BlockedAttempt {
+  id         String   @id @default(cuid())
+  at         DateTime @default(now())
+  kind       String
+  ip         String?
+  deviceType String?
+}
