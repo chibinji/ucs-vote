@@ -41,8 +41,19 @@ export function BallotForm({ positions }: { positions: Position[] }) {
           deviceLabel: `${navigator.platform} · ${navigator.userAgent}`,
         }),
       });
-      const data = await res.json();
+      const text = await res.text();
+      let data: { error?: string; receipt?: string } = {};
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch {
+        throw new Error(
+          res.ok
+            ? "Unexpected server response. Please try again."
+            : `Could not cast vote (${res.status}). Please try again.`,
+        );
+      }
       if (!res.ok) throw new Error(data.error || "Could not cast vote.");
+      if (!data.receipt) throw new Error("Vote recorded but no receipt returned.");
       sessionStorage.setItem("ucs-receipt", data.receipt);
       markVoteComplete();
       window.location.replace("/vote/receipt");
