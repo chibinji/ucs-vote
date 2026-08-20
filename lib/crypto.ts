@@ -1,4 +1,4 @@
-import { createHash, randomBytes, randomInt, timingSafeEqual } from "node:crypto";
+import { createHash, randomBytes, randomInt, scryptSync, timingSafeEqual } from "node:crypto";
 
 export function sha256(value: string) {
   return createHash("sha256").update(value).digest("hex");
@@ -14,8 +14,18 @@ export function randomToken(bytes = 32) {
   return randomBytes(bytes).toString("hex");
 }
 
-export function sixDigitCode() {
-  return String(randomInt(0, 1_000_000)).padStart(6, "0");
+export function hashPassword(password: string) {
+  const salt = randomBytes(16).toString("hex");
+  const hash = scryptSync(password, salt, 64).toString("hex");
+  return `${salt}:${hash}`;
+}
+
+export function verifyPassword(password: string, stored: string) {
+  const [salt, hash] = stored.split(":");
+  if (!salt || !hash) return false;
+  const next = scryptSync(password, salt, 64);
+  const prev = Buffer.from(hash, "hex");
+  return prev.length === next.length && timingSafeEqual(prev, next);
 }
 
 export function receiptCode() {

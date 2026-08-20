@@ -8,6 +8,7 @@ type Voter = {
   csEmail: string;
   fullName: string | null;
   hasVoted: boolean;
+  hasPassword: boolean;
   deviceLabel: string | null;
 };
 
@@ -115,6 +116,24 @@ export function VotersPanel({ isAdmin }: { isAdmin: boolean }) {
     await reload();
   }
 
+  async function resetPassword(voter: Voter) {
+    if (!confirm(`Clear password for ${voter.computerNumber}? They will need to create a new one.`)) {
+      return;
+    }
+    const res = await fetch("/api/admin/voters", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: voter.id, action: "reset_password" }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      setError(data.error || "Could not reset password.");
+      return;
+    }
+    setMessage("Password cleared. Voter can create a new one.");
+    await reload();
+  }
+
   return (
     <div className="space-y-6">
       {error ? <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p> : null}
@@ -170,6 +189,7 @@ export function VotersPanel({ isAdmin }: { isAdmin: boolean }) {
                 <th className="pr-3">Email</th>
                 <th className="pr-3">Name</th>
                 <th className="pr-3">Voted</th>
+                <th className="pr-3">Password</th>
                 <th className="pr-3">Device</th>
                 {isAdmin ? <th>Actions</th> : null}
               </tr>
@@ -178,7 +198,7 @@ export function VotersPanel({ isAdmin }: { isAdmin: boolean }) {
               {voters.map((voter) => (
                 <tr key={voter.id} className="border-t border-[#454B4C]/10 align-top">
                   {editingId === voter.id ? (
-                    <td colSpan={isAdmin ? 6 : 5} className="py-3">
+                    <td colSpan={isAdmin ? 7 : 6} className="py-3">
                       <form
                         className="grid gap-2 sm:grid-cols-4"
                         onSubmit={(event) => saveVoter(event, voter.id)}
@@ -202,6 +222,7 @@ export function VotersPanel({ isAdmin }: { isAdmin: boolean }) {
                       <td className="pr-3">{voter.csEmail}</td>
                       <td className="pr-3">{voter.fullName || "—"}</td>
                       <td className="pr-3">{voter.hasVoted ? "Yes" : "No"}</td>
+                      <td className="pr-3">{voter.hasPassword ? "Set" : "Not set"}</td>
                       <td className="max-w-[12rem] truncate pr-3" title={voter.deviceLabel || ""}>
                         {voter.deviceLabel || "—"}
                       </td>
@@ -217,6 +238,11 @@ export function VotersPanel({ isAdmin }: { isAdmin: boolean }) {
                                   Delete
                                 </button>
                               </>
+                            ) : null}
+                            {voter.hasPassword ? (
+                              <button className="btn btn-ghost" type="button" onClick={() => resetPassword(voter)}>
+                                Reset password
+                              </button>
                             ) : null}
                             {voter.deviceLabel ? (
                               <button className="btn btn-ghost" type="button" onClick={() => resetDevice(voter.id)}>

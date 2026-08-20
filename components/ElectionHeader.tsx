@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ElectionControls, ShareBar } from "@/components/AdminActions";
+import { ElectionControls } from "@/components/AdminActions";
 
 export function ElectionHeader({
   title,
@@ -67,7 +67,6 @@ export function ElectionHeader({
           </p>
           {error ? <p className="mt-2 text-sm text-red-700">{error}</p> : null}
         </div>
-        <ShareBar />
       </div>
       <ElectionControls status={status} isAdmin={isAdmin} />
     </div>

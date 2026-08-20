@@ -1,47 +1,58 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { sixDigitCode, sha256 } from "@/lib/crypto";
-import { sendOtpEmail } from "@/lib/email";
+import { sha256, verifyPassword } from "@/lib/crypto";
 import { getElection } from "@/lib/election";
 import { recordBlock, writeAudit } from "@/lib/audit";
 import { clientIp, deviceTypeFromLabel, jsonError } from "@/lib/http";
 import { hitRateLimit } from "@/lib/rate-limit";
-import { getDeviceToken, setVoteDoneCookie } from "@/lib/session";
+import {
+  getDeviceToken,
+  setDeviceCookie,
+  setVoteDoneCookie,
+  setVoterSession,
+} from "@/lib/session";
 
 export async function POST(request: Request) {
   const ip = clientIp(request);
-  const limited = await hitRateLimit(`vote-login:${ip}`, 8, 15 * 60 * 1000);
+  const limited = await hitRateLimit(`vote-login:${ip}`, 10, 15 * 60 * 1000);
   if (!limited.ok) return jsonError("Too many attempts. Try again in 15 minutes.", 429);
 
   const body = (await request.json()) as {
-    computerNumber?: string;
     csEmail?: string;
+    password?: string;
     fingerprint?: string;
     deviceLabel?: string;
   };
 
-  const computerNumber = (body.computerNumber || "").trim().toUpperCase();
   const csEmail = (body.csEmail || "").trim().toLowerCase();
-  if (!computerNumber || !csEmail) {
-    return jsonError("Computer number and CS email are required.");
+  const password = body.password || "";
+  if (!csEmail || !password) {
+    return jsonError("CS email and password are required.");
   }
 
   const election = await getElection();
   if (election.status !== "open") {
     return jsonError(
-      election.status === "closed"
-        ? "Voting has ended."
-        : "Voting is not open yet.",
+      election.status === "closed" ? "Voting has ended." : "Voting is not open yet.",
     );
   }
 
-  const voter = await prisma.voter.findFirst({
-    where: { computerNumber, csEmail },
-  });
-  if (!voter) {
+  const voter = await prisma.voter.findFirst({ where: { csEmail } });
+  if (!voter || !voter.passwordHash) {
     await recordBlock("invalid_login", ip, deviceTypeFromLabel(body.deviceLabel));
     await writeAudit({ actor: "voter", action: "login_rejected", ip });
-    return jsonError("You are not on the registered voter list.", 403);
+    return jsonError(
+      voter && !voter.passwordHash
+        ? "Create your password first using your computer number and CS email."
+        : "Incorrect email or password.",
+      403,
+    );
+  }
+
+  if (!verifyPassword(password, voter.passwordHash)) {
+    await recordBlock("invalid_login", ip, deviceTypeFromLabel(body.deviceLabel));
+    await writeAudit({ actor: "voter", action: "login_rejected", ip });
+    return jsonError("Incorrect email or password.", 401);
   }
 
   const cookieToken = await getDeviceToken();
@@ -62,7 +73,10 @@ export async function POST(request: Request) {
         403,
       );
     }
+    if (cookieToken) await setDeviceCookie(cookieToken);
   }
+
+  await setVoterSession(voter.id);
 
   if (voter.hasVoted) {
     await setVoteDoneCookie();
@@ -70,39 +84,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true, alreadyVoted: true });
   }
 
-  const emailLimit = await hitRateLimit(`otp:${voter.id}`, 5, 15 * 60 * 1000);
-  if (!emailLimit.ok) return jsonError("Too many codes sent. Wait 15 minutes.", 429);
-
-  const code = sixDigitCode();
-  await prisma.otpCode.updateMany({
-    where: { voterId: voter.id, consumedAt: null },
-    data: { consumedAt: new Date() },
-  });
-  await prisma.otpCode.create({
-    data: {
-      voterId: voter.id,
-      codeHash: sha256(code),
-      expiresAt: new Date(Date.now() + 10 * 60 * 1000),
-    },
-  });
-
-  let mailed: { delivered: boolean; preview: boolean };
-  try {
-    mailed = await sendOtpEmail(voter.csEmail, code);
-  } catch (err) {
-    return jsonError(
-      err instanceof Error
-        ? `Could not send email: ${err.message}`
-        : "Could not send the verification email.",
-      502,
-    );
-  }
-  await writeAudit({ actor: "voter", action: "otp_sent", ip });
-
-  return NextResponse.json({
-    ok: true,
-    otpRequired: true,
-    preview: mailed.preview,
-    deviceLabel: body.deviceLabel || null,
-  });
+  await writeAudit({ actor: "voter", action: "login_ok", ip });
+  return NextResponse.json({ ok: true, hasVoted: false });
 }

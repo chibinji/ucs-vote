@@ -50,7 +50,6 @@ export async function POST(request: Request) {
     await prisma.$transaction([
       prisma.ballotChoice.deleteMany(),
       prisma.ballot.deleteMany(),
-      prisma.otpCode.deleteMany(),
       prisma.blockedAttempt.deleteMany(),
       prisma.voter.updateMany({
         data: {
@@ -69,7 +68,7 @@ export async function POST(request: Request) {
     await writeAudit({
       actor: "admin",
       action: "election_restart",
-      detail: "Cleared ballots, devices, OTPs and returned to draft",
+      detail: "Cleared ballots, devices and returned to draft",
       ip,
     });
   } else {

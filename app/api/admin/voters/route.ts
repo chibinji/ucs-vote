@@ -48,9 +48,15 @@ export async function GET() {
       hasVoted: true,
       votedAt: true,
       deviceLabel: true,
+      passwordHash: true,
     },
   });
-  return NextResponse.json({ voters });
+  return NextResponse.json({
+    voters: voters.map(({ passwordHash, ...voter }) => ({
+      ...voter,
+      hasPassword: Boolean(passwordHash),
+    })),
+  });
 }
 
 export async function POST(request: Request) {
@@ -106,7 +112,6 @@ export async function POST(request: Request) {
     : rows;
 
   if (election.status === "draft") {
-    await prisma.otpCode.deleteMany();
     await prisma.voter.deleteMany();
   }
 
@@ -138,6 +143,7 @@ export async function PATCH(request: Request) {
   if (error) return jsonError(error, staff ? 403 : 401);
   const body = (await request.json()) as {
     id?: string;
+    action?: string;
     computerNumber?: string;
     csEmail?: string;
     fullName?: string;
@@ -145,6 +151,21 @@ export async function PATCH(request: Request) {
   if (!body.id) return jsonError("Missing voter id.");
   const voter = await prisma.voter.findUnique({ where: { id: body.id } });
   if (!voter) return jsonError("Voter not found.", 404);
+
+  if (body.action === "reset_password") {
+    await prisma.voter.update({
+      where: { id: body.id },
+      data: { passwordHash: null },
+    });
+    await writeAudit({
+      actor: "admin",
+      action: "password_reset",
+      detail: voter.computerNumber,
+      ip: clientIp(request),
+    });
+    return NextResponse.json({ ok: true });
+  }
+
   if (voter.hasVoted) return jsonError("Cannot edit a voter who has already voted.");
 
   try {
@@ -176,7 +197,6 @@ export async function DELETE(request: Request) {
   const voter = await prisma.voter.findUnique({ where: { id } });
   if (!voter) return jsonError("Voter not found.", 404);
   if (voter.hasVoted) return jsonError("Cannot remove a voter who has already voted.");
-  await prisma.otpCode.deleteMany({ where: { voterId: id } });
   await prisma.voter.delete({ where: { id } });
   await writeAudit({
     actor: "admin",

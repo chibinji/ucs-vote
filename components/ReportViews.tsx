@@ -16,9 +16,8 @@ export type ReportData = {
 };
 
 const BLOCKED_LABELS: Record<string, string> = {
-  invalid_login: "Wrong computer number or email",
+  invalid_login: "Wrong computer number, email, or password",
   device_mismatch: "Tried to use a different device",
-  otp_fail: "Wrong login code",
 };
 
 function winners(candidates: { name: string; votes: number }[]) {

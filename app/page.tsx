@@ -18,7 +18,7 @@ export default async function HomePage() {
 
   const status =
     election.status === "open"
-      ? "Voting is open. Sign in with your computer number and CS email."
+      ? "Voting is open. Create a password (first time) or sign in with your CS email."
       : election.status === "closed"
         ? "Voting has ended."
         : "Voting is not open yet. Please wait for the election officers.";
