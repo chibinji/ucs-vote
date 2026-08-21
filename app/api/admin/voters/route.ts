@@ -113,20 +113,37 @@ export async function POST(request: Request) {
 
   if (election.status === "draft") {
     await prisma.voter.deleteMany();
+    const CHUNK = 50;
+    for (let i = 0; i < filtered.length; i += CHUNK) {
+      await prisma.voter.createMany({ data: filtered.slice(i, i + CHUNK) });
+    }
+  } else {
+    const existing = await prisma.voter.findMany({
+      select: { computerNumber: true },
+    });
+    const existingNumbers = new Set(existing.map((row) => row.computerNumber));
+    const toCreate = filtered.filter((row) => !existingNumbers.has(row.computerNumber));
+    const toUpdate = filtered.filter((row) => existingNumbers.has(row.computerNumber));
+
+    const CHUNK = 50;
+    for (let i = 0; i < toCreate.length; i += CHUNK) {
+      await prisma.voter.createMany({ data: toCreate.slice(i, i + CHUNK) });
+    }
+
+    for (let i = 0; i < toUpdate.length; i += CHUNK) {
+      const chunk = toUpdate.slice(i, i + CHUNK);
+      await Promise.all(
+        chunk.map((row) =>
+          prisma.voter.update({
+            where: { computerNumber: row.computerNumber },
+            data: { fullName: row.fullName },
+          }),
+        ),
+      );
+    }
   }
 
-  let created = 0;
-  for (const row of filtered) {
-    await prisma.voter.upsert({
-      where: { computerNumber: row.computerNumber },
-      create: row,
-      update:
-        election.status === "draft"
-          ? { csEmail: row.csEmail, fullName: row.fullName }
-          : { fullName: row.fullName },
-    });
-    created += 1;
-  }
+  const created = filtered.length;
 
   await writeAudit({
     actor: "admin",

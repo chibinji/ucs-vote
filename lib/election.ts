@@ -1,18 +1,107 @@
 import { prisma } from "@/lib/prisma";
 
-export async function getElection() {
-  const existing = await prisma.election.findFirst({
-    orderBy: { createdAt: "asc" },
-    include: {
-      positions: {
-        orderBy: { sortOrder: "asc" },
-        include: { candidates: { orderBy: { sortOrder: "asc" } } },
+const electionSelect = {
+  id: true,
+  title: true,
+  status: true,
+  openedAt: true,
+  closedAt: true,
+  createdAt: true,
+  updatedAt: true,
+  positions: {
+    orderBy: { sortOrder: "asc" as const },
+    select: {
+      id: true,
+      electionId: true,
+      title: true,
+      sortOrder: true,
+      candidates: {
+        orderBy: { sortOrder: "asc" as const },
+        select: {
+          id: true,
+          positionId: true,
+          name: true,
+          sortOrder: true,
+          photoMime: true,
+        },
       },
     },
-  });
-  if (existing) return existing;
+  },
+};
 
-  return prisma.election.create({
+export type LeanCandidate = {
+  id: string;
+  positionId: string;
+  name: string;
+  sortOrder: number;
+  photoMime: string | null;
+  hasPhoto: boolean;
+};
+
+export type LeanPosition = {
+  id: string;
+  electionId: string;
+  title: string;
+  sortOrder: number;
+  candidates: LeanCandidate[];
+};
+
+export type LeanElection = {
+  id: string;
+  title: string;
+  status: string;
+  openedAt: Date | null;
+  closedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+  positions: LeanPosition[];
+};
+
+function withHasPhoto(
+  election: {
+    id: string;
+    title: string;
+    status: string;
+    openedAt: Date | null;
+    closedAt: Date | null;
+    createdAt: Date;
+    updatedAt: Date;
+    positions: {
+      id: string;
+      electionId: string;
+      title: string;
+      sortOrder: number;
+      candidates: {
+        id: string;
+        positionId: string;
+        name: string;
+        sortOrder: number;
+        photoMime: string | null;
+      }[];
+    }[];
+  },
+): LeanElection {
+  return {
+    ...election,
+    positions: election.positions.map((position) => ({
+      ...position,
+      candidates: position.candidates.map((candidate) => ({
+        ...candidate,
+        hasPhoto: Boolean(candidate.photoMime),
+      })),
+    })),
+  };
+}
+
+/** Lean election load — never fetches candidate photo BLOBs. */
+export async function getElection(): Promise<LeanElection> {
+  const existing = await prisma.election.findFirst({
+    orderBy: { createdAt: "asc" },
+    select: electionSelect,
+  });
+  if (existing) return withHasPhoto(existing);
+
+  const created = await prisma.election.create({
     data: {
       title: "UCS Election",
       status: "draft",
@@ -24,13 +113,9 @@ export async function getElection() {
         ],
       },
     },
-    include: {
-      positions: {
-        orderBy: { sortOrder: "asc" },
-        include: { candidates: { orderBy: { sortOrder: "asc" } } },
-      },
-    },
+    select: electionSelect,
   });
+  return withHasPhoto(created);
 }
 
 export function shuffle<T>(items: T[], seed: string) {

@@ -24,7 +24,7 @@ export default async function VotePage() {
       position.candidates.map((candidate) => ({
         id: candidate.id,
         name: candidate.name,
-        hasPhoto: Boolean(candidate.photoData),
+        hasPhoto: candidate.hasPhoto,
       })),
       session.voterId + position.id,
     ),

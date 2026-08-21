@@ -15,23 +15,31 @@ type Snapshot = {
   }[];
 };
 
+const POLL_MS = 9000;
+
 export function LiveDashboard() {
   const [data, setData] = useState<Snapshot | null>(null);
 
   useEffect(() => {
-    let source: EventSource | null = null;
-    try {
-      source = new EventSource("/api/admin/live");
-      source.onmessage = (event) => setData(JSON.parse(event.data));
-    } catch {
-      source = null;
+    let cancelled = false;
+
+    async function load() {
+      try {
+        const res = await fetch("/api/admin/results", { cache: "no-store" });
+        if (!res.ok || cancelled) return;
+        setData(await res.json());
+      } catch {
+        // Keep last snapshot on transient errors.
+      }
     }
-    const poll = setInterval(async () => {
-      const res = await fetch("/api/admin/results");
-      if (res.ok) setData(await res.json());
-    }, 4000);
+
+    void load();
+    const poll = setInterval(() => {
+      void load();
+    }, POLL_MS);
+
     return () => {
-      source?.close();
+      cancelled = true;
       clearInterval(poll);
     };
   }, []);

@@ -3,9 +3,10 @@ import { getElection } from "@/lib/election";
 
 export async function getLiveSnapshot() {
   const election = await getElection();
-  const [registered, voted, ballots, blocked, choices] = await Promise.all([
+  const [registered, voted, ballotCount, ballots, blocked, choices] = await Promise.all([
     prisma.voter.count(),
     prisma.voter.count({ where: { hasVoted: true } }),
+    prisma.ballot.count(),
     prisma.ballot.findMany({
       orderBy: { createdAt: "desc" },
       take: 12,
@@ -39,9 +40,9 @@ export async function getLiveSnapshot() {
       percent: registered === 0 ? 0 : Math.round((voted / registered) * 1000) / 10,
     },
     reconciliation: {
-      ballots: await prisma.ballot.count(),
+      ballots: ballotCount,
       votersMarked: voted,
-      ok: (await prisma.ballot.count()) === voted,
+      ok: ballotCount === voted,
     },
     blocked: Object.fromEntries(blocked.map((row) => [row.kind, row._count.kind])),
     recent: ballots.map((row) => ({
@@ -64,7 +65,7 @@ export async function getLiveSnapshot() {
             name: candidate.name,
             votes,
             percent: total === 0 ? 0 : Math.round((votes / total) * 1000) / 10,
-            hasPhoto: Boolean(candidate.photoData),
+            hasPhoto: candidate.hasPhoto,
           };
         }),
       };

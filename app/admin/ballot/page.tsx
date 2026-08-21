@@ -21,7 +21,7 @@ export default async function BallotPage() {
           candidates: position.candidates.map((candidate) => ({
             id: candidate.id,
             name: candidate.name,
-            hasPhoto: Boolean(candidate.photoData),
+            hasPhoto: candidate.hasPhoto,
           })),
         }))}
       />
